@@ -14,6 +14,19 @@ body {
     flex-direction: column;
 }
 
+#back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+#back-button svg {
+  width: 44px; /* adjust size if needed */
+  height: 44px;
+}
+
 #sidebar {
     position: relative;
     width: 100%;
