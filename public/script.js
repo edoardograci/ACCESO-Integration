@@ -125,6 +125,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const lat = parseFloat(card.getAttribute('data-lat'));
             const lon = parseFloat(card.getAttribute('data-lon'));
             map.setView([lat, lon], 16);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
         });
 
         return card;
@@ -196,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const lat = parseFloat(li.dataset.lat);
                     const lon = parseFloat(li.dataset.lon);
                     map.setView([lat, lon], 16);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
             });
         }
