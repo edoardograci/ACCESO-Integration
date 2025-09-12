@@ -191,6 +191,57 @@
         font-size: 2rem;
     }
     
+    /* Mobile-first modal layout: full viewport, image centered, text at bottom */
+    #imageModal {
+        align-items: stretch; /* allow content to fill height */
+    }
+
+    #imageModal .modal-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        max-width: none;
+        gap: 0;
+        padding: 0 16px; /* small horizontal breathing room */
+    }
+
+    #imageModal .modal-image-wrap {
+        flex: 1 1 auto;
+        height: auto; /* let flex control height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    #imageModal #modalImage {
+        position: relative; /* avoid offset issues on small screens */
+        max-height: 100%;
+        max-width: 100%;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        display: block;
+    }
+
+    #imageModal .modal-info {
+        width: 100%;
+        margin-top: auto; /* push to bottom */
+        padding: 16px 0 24px; /* bottom spacing to ensure visibility */
+    }
+
+    /* Keep close button visible at the top-right of the viewport */
+    #imageModal .modal-close {
+        position: flex;
+        top: 16px;
+        right: 16px;
+        z-index: 10000; /* above modal content */
+        background-color: rgba(255,255,255,0.3);
+    }
+    
     .moodboard-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
