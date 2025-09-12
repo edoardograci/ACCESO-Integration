@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Moodboard - ACCESO</title>
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="moodboard.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+	<header class="header">
+		<nav class="nav">
+			<div class="nav-brand">
+				<a href="/" class="brand-link">ACCESO</a>
+			</div>
+			<div class="nav-links">
+				<a href="/" class="nav-link">Map</a>
+				<a href="/moodboard" class="nav-link active">Moodboard</a>
+			</div>
+		</nav>
+	</header>
+
+	<main class="main">
+		<div class="container">
+			<h1 class="moodboard-title">MOODBOARD</h1>
+			<p class="moodboard-subtitle"">Published works only</p>
+			<div class="moodboard-grid" id="moodboardGrid"></div>
+
+			<div class="empty-state" id="emptyState" style="display: none;">
+				<h3>No images found</h3>
+				<p>Only entries with Status = Published are shown.</p>
+			</div>
+		</div>
+	</main>
+
+	<!-- Image Modal -->
+	<div id="imageModal" class="modal" style="display:none;">
+		<div class="modal-content">
+			<button id="closeImageModal" class="modal-close">&times;</button>
+			<div class="modal-image-wrap">
+				<img id="modalImage" alt="Preview"/>
+			</div>
+			<div class="modal-info">
+				<div id="modalCity"></div>
+				<h2 id="modalName"></h2>
+				<div id="modalMeta" class="moodboard-description"></div>
+			</div>
+		</div>
+	</div>
+
+	<script src="moodboard.js"></script>
+</body>
+</html>

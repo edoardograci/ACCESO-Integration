@@ -1,0 +1,328 @@
+/* Map Page Specific Styles */
+
+#back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+#back-button svg {
+    width: 44px;
+    height: 44px;
+}
+
+#sidebar {
+    position: relative;
+    width: 100%;
+    overflow-y: scroll;
+    background-color: #171717;
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    z-index: 10;
+    color: #ddd;
+}
+
+#sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+#sidebar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#sidebar h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: 100;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.toolbar input {
+    font-family: 'PPSupplySans', Arial, sans-serif;
+    width: 70%;
+    border: 1px solid #dddddd41;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #313131;
+    color: #ddd;
+}
+
+.toolbar button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    margin-left: 10px;
+    color: #e2e2e2;
+}
+
+#sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#sidebar li {
+    color: white;
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid #eee;
+    border-radius: 0;
+    padding: 15px 0;
+    margin-bottom: 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: 100;
+    font-size: 16px;
+}
+
+#sidebar li:hover {
+    background-color: #313131;
+}
+
+#index {
+    display: flex;
+}
+
+#index p {
+    padding-left: 16px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#index p:hover {
+    text-decoration: line-through;
+}
+
+#map {
+    width: 100%;
+    height: 80vh;
+    mask-image: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+    background-color: black;
+}
+
+.leaflet-control-attribution {
+    opacity: 0.3;
+}
+
+/* Grid Container for Map Page */
+#grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Responsive breakpoints for grid */
+@media (max-width: 1200px) {
+    #grid-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    #grid-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    #grid-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Designer Cards for Map Page */
+.designer-card {
+    background-color: #2a2a2a;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.designer-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.card-image {
+    padding-top: 20px;
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+}
+
+.card-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: space-between;
+}
+
+.card-top {
+    flex-grow: 1;
+}
+
+.card-city {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card-name {
+    font-size: 18px;
+    font-weight: 300;
+    color: #fff;
+    margin-bottom: 10px;
+    line-height: 1.3;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
+.card-website {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 10px;
+    word-break: break-all;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+}
+
+.card-website a {
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.card-website a:hover {
+    color: #fff;
+}
+
+.card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    flex-shrink: 0;
+}
+
+.card-email {
+    font-size: 12px;
+    color: #999;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-email a {
+    color: #999;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.card-email a:hover {
+    color: #ccc;
+}
+
+.instagram-icon {
+    width: 24px;
+    height: 24px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.instagram-icon:hover {
+    opacity: 1;
+}
+
+/* Skeleton Loading for Map Cards */
+.skeleton {
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-card {
+    background-color: #2a2a2a;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.skeleton-image {
+    padding-top: 20px;
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    flex-shrink: 0;
+}
+
+.skeleton-content {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.skeleton-city {
+    height: 12px;
+    width: 60%;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.skeleton-name {
+    height: 20px;
+    width: 80%;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.skeleton-website {
+    height: 14px;
+    width: 70%;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.skeleton-email {
+    height: 12px;
+    width: 50%;
+    border-radius: 4px;
+    margin-top: auto;
+}

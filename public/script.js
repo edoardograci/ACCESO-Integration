@@ -43,20 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
 <circle cx="79" cy="25" r="6.5" fill="white" stroke="white"/>
 </svg>`;
 
-        const backButton = document.createElement('div');
-backButton.id = 'back-button';
-backButton.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 90 90" fill="none">
-        <rect x="90" width="90" height="90" rx="45" transform="rotate(90 90 0)" fill="#FBFBFB"/>
-        <path d="M46.572 35.772L42.576 35.772L31.698 45.022L31.698 45.466L42.576 54.716L46.572 54.716L46.572 60.488L40.43 60.488L26.148 48.352L26.148 42.136L40.43 30L46.572 30L46.572 35.772ZM63 48.13L26.148 48.13L26.148 42.358L63 42.358L63 48.13Z" fill="black"/>
-        </svg>
-`;
-document.body.appendChild(backButton);
-
-backButton.addEventListener('click', () => {
-    window.location.href = 'https://acceso.edoardograci.com';
-});
-
     // Function that creates a divIcon from the initial
     function getIconForPlace(name) {
         if (!name || typeof name !== 'string') {
