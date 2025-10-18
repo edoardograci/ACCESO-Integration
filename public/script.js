@@ -208,6 +208,136 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add toggle event listener
     document.getElementById('view-toggle').addEventListener('click', toggleView);
 
+    // Suggest a Studio modal logic
+    const suggestBtn = document.getElementById('suggestStudioBtn');
+    const modal = document.getElementById('suggestStudioModal');
+    const closeBtn = modal ? modal.querySelector('.suggest-close') : null;
+    const cancelBtn = modal ? document.getElementById('cancelSuggest') : null;
+    const form = modal ? document.getElementById('suggestStudioForm') : null;
+    const hasAddressSelect = modal ? document.getElementById('hasAddress') : null;
+    const addressGroup = modal ? document.getElementById('addressGroup') : null;
+    const addressInput = modal ? document.getElementById('studioAddress') : null;
+    const formMessage = modal ? document.getElementById('formMessage') : null;
+    const submitBtn = modal ? document.getElementById('submitSuggest') : null;
+
+    function openModal() {
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        form?.reset();
+        if (addressGroup) addressGroup.style.display = 'none';
+        if (formMessage) {
+            formMessage.textContent = '';
+            formMessage.className = 'form-message';
+        }
+    }
+
+    function closeModal() {
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    if (suggestBtn) {
+        suggestBtn.addEventListener('click', openModal);
+    }
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeModal);
+    }
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    }
+    if (hasAddressSelect && addressGroup && addressInput) {
+        hasAddressSelect.addEventListener('change', () => {
+            const value = hasAddressSelect.value;
+            if (value === 'yes') {
+                addressGroup.style.display = '';
+            } else {
+                addressGroup.style.display = 'none';
+                addressInput.value = '';
+            }
+        });
+    }
+
+    async function submitSuggestion(event) {
+        event.preventDefault();
+        if (!form || !formMessage || !submitBtn) return;
+
+        const name = (document.getElementById('studioName').value || '').trim();
+        const website = (document.getElementById('studioWebsite').value || '').trim();
+        const instagram = (document.getElementById('studioInstagram').value || '').trim();
+        const city = (document.getElementById('studioCity').value || '').trim();
+        const hasAddress = (document.getElementById('hasAddress').value || '').trim();
+        const address = (document.getElementById('studioAddress').value || '').trim();
+
+        // Validation
+        if (!name) {
+            formMessage.textContent = 'Studio Name is required.';
+            formMessage.className = 'form-message error';
+            return;
+        }
+        if (!city) {
+            formMessage.textContent = 'City is required.';
+            formMessage.className = 'form-message error';
+            return;
+        }
+        if (!hasAddress) {
+            formMessage.textContent = 'Please specify if it has an address.';
+            formMessage.className = 'form-message error';
+            return;
+        }
+        if (hasAddress === 'yes' && !address) {
+            formMessage.textContent = 'Street Address is required when selecting Yes.';
+            formMessage.className = 'form-message error';
+            return;
+        }
+
+        // Submit
+        formMessage.textContent = 'Submitting...';
+        formMessage.className = 'form-message loading';
+        submitBtn.disabled = true;
+
+        try {
+            const res = await fetch('/api/suggest-studio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    website,
+                    instagram,
+                    city,
+                    hasAddress,
+                    address
+                })
+            });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || `Request failed with ${res.status}`);
+            }
+
+            formMessage.textContent = 'Thanks! Your suggestion was sent.';
+            formMessage.className = 'form-message success';
+            setTimeout(() => {
+                closeModal();
+            }, 2000);
+        } catch (err) {
+            formMessage.textContent = err.message || 'Submission failed. Please try again later.';
+            formMessage.className = 'form-message error';
+        } finally {
+            submitBtn.disabled = false;
+        }
+    }
+
+    if (form) {
+        form.addEventListener('submit', submitSuggestion);
+    }
+
     async function fetchData() {
         try {
             // Replace with your actual API endpoint

@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 
 // Debug: Log environment variables (without sensitive values)
 console.log("Environment variables loaded:");
-console.log("NOTION_TOKEN:", process.env.NOTION_TOKEN ? "✓ Set" : "✗ Missing");
+console.log("NOTION_TOKEN:", (process.env.NOTION_TOKEN || process.env.NOTION_API_KEY) ? "✓ Set" : "✗ Missing");
 console.log("NOTION_DATABASE_ID:", process.env.NOTION_DATABASE_ID ? "✓ Set" : "✗ Missing");
 console.log("NOTION_MOODBOARD_ID:", process.env.NOTION_MOODBOARD_ID ? "✓ Set" : "✗ Missing");
 
@@ -30,7 +30,7 @@ app.use(express.static("public"));
 app.use(express.json());
 
 // Initialize Notion client
-const notion = new Client({ auth: process.env.NOTION_TOKEN });
+const notion = new Client({ auth: process.env.NOTION_TOKEN || process.env.NOTION_API_KEY });
 const databaseId = process.env.NOTION_DATABASE_ID;
 const moodboardId = process.env.NOTION_MOODBOARD_ID;
 
@@ -434,6 +434,57 @@ app.get("/data", async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Failed to fetch data" });
+    }
+});
+
+// Suggest a Studio endpoint
+app.post("/api/suggest-studio", async (req, res) => {
+    try {
+        const { name, website, instagram, city, hasAddress, address } = req.body || {};
+
+        // Basic validation
+        if (!name || !city) {
+            return res.status(400).json({ error: "Missing required fields: name and city" });
+        }
+        if (!hasAddress) {
+            return res.status(400).json({ error: "Missing required field: hasAddress" });
+        }
+        if (hasAddress === "yes" && !address) {
+            return res.status(400).json({ error: "Address is required when hasAddress is yes" });
+        }
+
+        // Map to Notion properties
+        const properties = {
+            Name: {
+                title: [{ type: "text", text: { content: name } }]
+            },
+            City: {
+                select: city ? { name: city } : null
+            },
+            "Website URL": {
+                url: website || null
+            },
+            IG: {
+                url: instagram || null
+            },
+            Address: {
+                rich_text: address ? [{ type: "text", text: { content: address } }] : []
+            },
+            Status: {
+                status: { name: "To Review" }
+            }
+        };
+
+        // Create the page in Notion
+        await notion.pages.create({
+            parent: { database_id: databaseId },
+            properties
+        });
+
+        return res.json({ ok: true });
+    } catch (error) {
+        console.error("Suggest studio failed:", error?.message || error);
+        return res.status(500).json({ error: "Failed to submit suggestion" });
     }
 });
 

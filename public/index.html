@@ -27,6 +27,7 @@
         <div id="index">
             <h1>INDEX</h1>
             <p id="view-toggle">[grid]</p>
+            <p id="suggestStudioBtn">[Suggest a Studio]</p>
         </div>
         <div class="toolbar">
             <input type="text" placeholder="Search">
@@ -44,5 +45,55 @@
     </div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="script.js"></script>
+
+    <!-- Suggest a Studio Modal -->
+    <div id="suggestStudioModal" class="suggest-studio-modal hidden" aria-hidden="true">
+        <div class="suggest-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="suggestStudioTitle">
+            <div class="suggest-header">
+                <h2 id="suggestStudioTitle">Suggest a Studio</h2>
+                <button type="button" class="suggest-close" aria-label="Close">×</button>
+            </div>
+            <form id="suggestStudioForm" novalidate>
+                <div class="form-group">
+                    <label for="studioName">Studio Name<span class="req">*</span></label>
+                    <input type="text" id="studioName" name="name" required placeholder="e.g., Studio Example">
+                </div>
+                <div class="form-group">
+                    <label for="studioWebsite">Website</label>
+                    <input type="url" id="studioWebsite" name="website" placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label for="studioInstagram">Instagram</label>
+                    <input type="url" id="studioInstagram" name="instagram" placeholder="https://instagram.com/handle">
+                </div>
+                <div class="form-group">
+                    <label for="studioCity">City<span class="req">*</span></label>
+                    <select id="studioCity" name="city" required>
+                        <option value="" disabled selected>Select a city</option>
+                        <option value="Milan">Milan</option>
+                        <option value="Seoul">Seoul</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="hasAddress">Does it have a specific address?<span class="req">*</span></label>
+                    <select id="hasAddress" name="hasAddress" required>
+                        <option value="" disabled selected>Select an option</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="idk">I don't know</option>
+                    </select>
+                </div>
+                <div class="form-group" id="addressGroup" style="display:none;">
+                    <label for="studioAddress">Street Address<span class="req">*</span></label>
+                    <input type="text" id="studioAddress" name="address" placeholder="e.g., Via Torino 10, 20123 Milano">
+                </div>
+                <div class="form-message" id="formMessage" role="status" aria-live="polite"></div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelSuggest">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitSuggest">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
