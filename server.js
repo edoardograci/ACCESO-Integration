@@ -339,15 +339,22 @@ async function processImagesInBatches(pages, batchSize = 5) {
             
             try {
                 const publicUrl = await ensureSupabaseWebp(srcUrl, page.id);
+                
+                // Extract and log keywords
+                const keywords = readRichText(page, "Keywords");
+                const name = readTitle(page, "Name") || "Untitled";
+                console.log(`📝 Keywords for "${name}": ${keywords || "undefined"}`);
+                
                 return {
                     id: page.id,
                     imageUrl: publicUrl,
-                    name: readTitle(page, "Name") || "Untitled",
+                    name: name,
                     designer: readSelect(page, "Designer") || null,
                     year: readSelect(page, "Year") || null,
                     client: readRichText(page, "Client") || readSelect(page, "Client") || null,
                     link: readUrl(page, "Link") || null,
                     city: readSelect(page, "City") || readRichText(page, "City") || null,
+                    keywords: keywords || null,
                     createdAt: page.created_time,
                     updatedAt: page.last_edited_time
                 };

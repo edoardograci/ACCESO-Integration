@@ -1,8 +1,9 @@
-// Moodboard functionality (fixed skeleton animation)
+// Moodboard functionality with semantic search (fallback to text-based similarity)
 class MoodboardManager {
     constructor() {
         this.moodboardData = [];
         this.skeletonCount = 12;
+        this.isSearching = false;
         this.init();
     }
 
@@ -14,12 +15,169 @@ class MoodboardManager {
     bindEvents() {
         const modal = document.getElementById('imageModal');
         const closeBtn = document.getElementById('closeImageModal');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+
         if (closeBtn) closeBtn.addEventListener('click', () => this.hideModal());
         if (modal) {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) this.hideModal();
             });
         }
+
+        // Search functionality
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.performSearch();
+                }
+            });
+        }
+
+        if (searchButton) {
+            searchButton.addEventListener('click', () => this.performSearch());
+        }
+    }
+
+    async performSearch() {
+        if (this.isSearching) return;
+
+        const searchInput = document.getElementById('searchInput');
+        const query = searchInput?.value?.trim();
+        
+        if (!query) {
+            // If no query, show all items in original order
+            await this.renderGrid(this.moodboardData);
+            return;
+        }
+
+        this.isSearching = true;
+        const searchButton = document.getElementById('searchButton');
+        if (searchButton) {
+            searchButton.textContent = 'Searching...';
+            searchButton.disabled = true;
+        }
+
+        try {
+            console.log(`🔍 Searching for: "${query}"`);
+            
+            // Calculate similarity scores for all items using text-based similarity
+            const scoredItems = this.calculateTextSimilarity(query);
+            
+            // Sort by relevance score (highest first)
+            scoredItems.sort((a, b) => b.score - a.score);
+            
+            // Log results
+            console.log('📊 Search Results:');
+            scoredItems.forEach(item => {
+                console.log(`${item.name} - Similarity Score: ${item.score.toFixed(3)}`);
+            });
+            
+            // Re-render grid with sorted items
+            await this.renderGrid(scoredItems);
+            
+        } catch (error) {
+            console.error('❌ Search failed:', error);
+        } finally {
+            this.isSearching = false;
+            if (searchButton) {
+                searchButton.textContent = 'Search';
+                searchButton.disabled = false;
+            }
+        }
+    }
+
+    parseKeywords(keywordsString) {
+        if (!keywordsString) return [];
+        return keywordsString.split(',')
+            .map(keyword => keyword.trim().toLowerCase())
+            .filter(keyword => keyword.length > 0);
+    }
+
+    calculateTextSimilarity(query) {
+        const queryWords = query.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+        const scoredItems = [];
+
+        for (const item of this.moodboardData) {
+            const keywords = this.parseKeywords(item.keywords);
+            if (keywords.length === 0) {
+                // Items without keywords get a score of 0
+                scoredItems.push({ ...item, score: 0 });
+                continue;
+            }
+
+            let totalSimilarity = 0;
+            let matchCount = 0;
+
+            // Calculate similarity for each query word
+            for (const queryWord of queryWords) {
+                let bestMatch = 0;
+                
+                // Find the best matching keyword for this query word
+                for (const keyword of keywords) {
+                    const similarity = this.calculateWordSimilarity(queryWord, keyword);
+                    bestMatch = Math.max(bestMatch, similarity);
+                }
+                
+                totalSimilarity += bestMatch;
+                if (bestMatch > 0.3) { // Threshold for considering it a match
+                    matchCount++;
+                }
+            }
+
+            // Calculate final score: average similarity + bonus for multiple matches
+            const avgSimilarity = queryWords.length > 0 ? totalSimilarity / queryWords.length : 0;
+            const matchBonus = (matchCount / queryWords.length) * 0.2; // Bonus for matching multiple words
+            const finalScore = avgSimilarity + matchBonus;
+
+            scoredItems.push({ ...item, score: finalScore });
+        }
+
+        return scoredItems;
+    }
+
+    calculateWordSimilarity(word1, word2) {
+        // Exact match
+        if (word1 === word2) return 1.0;
+        
+        // Contains match (one word contains the other)
+        if (word1.includes(word2) || word2.includes(word1)) return 0.8;
+        
+        // Levenshtein distance for fuzzy matching
+        const distance = this.levenshteinDistance(word1, word2);
+        const maxLength = Math.max(word1.length, word2.length);
+        const similarity = 1 - (distance / maxLength);
+        
+        // Only return similarity if it's above a threshold
+        return similarity > 0.6 ? similarity : 0;
+    }
+
+    levenshteinDistance(str1, str2) {
+        const matrix = [];
+        
+        for (let i = 0; i <= str2.length; i++) {
+            matrix[i] = [i];
+        }
+        
+        for (let j = 0; j <= str1.length; j++) {
+            matrix[0][j] = j;
+        }
+        
+        for (let i = 1; i <= str2.length; i++) {
+            for (let j = 1; j <= str1.length; j++) {
+                if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j] + 1
+                    );
+                }
+            }
+        }
+        
+        return matrix[str2.length][str1.length];
     }
 
     async loadMoodboard() {

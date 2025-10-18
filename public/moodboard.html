@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Moodboard - ACCESO</title>
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
 	<link rel="stylesheet" href="style.css">
 	<link rel="stylesheet" href="moodboard.css">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,6 +27,15 @@
 		<div class="container">
 			<h1 class="moodboard-title">MOODBOARD</h1>
 			<p class="moodboard-subtitle"">Published works only</p>
+			
+			<!-- Search Bar -->
+			<div class="search-container">
+				<div class="search-bar">
+					<input type="text" id="searchInput" placeholder="Search by keywords..." class="search-input">
+					<button id="searchButton" class="search-button">Search</button>
+				</div>
+			</div>
+			
 			<div class="moodboard-grid" id="moodboardGrid"></div>
 
 			<div class="empty-state" id="emptyState" style="display: none;">
