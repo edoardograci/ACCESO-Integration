@@ -114,7 +114,7 @@
 
 #map {
     width: 100%;
-    height: 80vh;
+    height: 70vh;
     mask-image: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
     -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
     background-color: black;
@@ -312,27 +312,23 @@
     height: 12px;
     width: 60%;
     margin-bottom: 8px;
-    border-radius: 4px;
 }
 
 .skeleton-name {
     height: 20px;
     width: 80%;
     margin-bottom: 10px;
-    border-radius: 4px;
 }
 
 .skeleton-website {
     height: 14px;
     width: 70%;
     margin-bottom: 10px;
-    border-radius: 4px;
 }
 
 .skeleton-email {
     height: 12px;
     width: 50%;
-    border-radius: 4px;
     margin-top: auto;
 }
 
@@ -353,7 +349,6 @@
     max-width: 520px;
     background: #1a1a1a;
     border: 1px solid #333;
-    border-radius: 8px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
 
@@ -374,7 +369,6 @@
     background: transparent;
     color: #e2e2e2;
     border: 1px solid #333;
-    border-radius: 4px;
     width: 32px;
     height: 32px;
     cursor: pointer;
@@ -403,7 +397,6 @@
     color: #e2e2e2;
     border: 1px solid #444;
     padding: 10px 12px;
-    border-radius: 4px;
 }
 .form-group input:focus,
 .form-group select:focus,

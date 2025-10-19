@@ -63,7 +63,6 @@ body {
     font-weight: 500;
     transition: color 0.2s ease;
     padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
 }
 
 .nav-link:hover {
@@ -97,7 +96,6 @@ body {
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
     text-decoration: none;
@@ -199,7 +197,6 @@ body {
     background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
-    border-radius: 4px;
 }
 
 .skeleton-image {
@@ -227,7 +224,6 @@ body {
     height: 12px;
     width: 60%;
     margin-bottom: 8px;
-    border-radius: 4px;
 }
 
 /* Responsive navigation */
