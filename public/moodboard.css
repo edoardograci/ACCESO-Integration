@@ -109,15 +109,14 @@
     flex-wrap: wrap;
 }
 
-/* Moodboard grid */
+/* Masonry Grid Layout */
 .moodboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
-    margin-bottom: 3rem;
+    column-count: 4;
+    column-gap: 16px;
+    margin-bottom: 1rem;
 }
 
-/* Moodboard items/cards */
+/* Moodboard items/cards - Masonry specific */
 .moodboard-item,
 .mood-card {
     background: #111;
@@ -127,6 +126,10 @@
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
+    margin-bottom: 8px;
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
 }
 
 .moodboard-item:hover,
@@ -139,6 +142,7 @@
     width: 100%;
     object-fit: cover;
     display: block;
+    height: auto;
 }
 
 .moodboard-content {
@@ -263,6 +267,13 @@
 }
 
 /* Responsive design for moodboard */
+@media (max-width: 1023px) {
+    /* Tablet: 3 columns */
+    .moodboard-grid {
+        column-count: 3;
+    }
+}
+
 @media (max-width: 900px) {
     #imageModal .modal-content {
         grid-template-columns: 1fr;
@@ -274,6 +285,17 @@
 }
 
 @media (max-width: 768px) {
+    /* Mobile: 2 columns */
+    .moodboard-grid {
+        column-count: 2;
+        column-gap: 12px;
+    }
+
+    .moodboard-item,
+    .mood-card {
+        margin-bottom: 12px;
+    }
+
     .moodboard-title {
         font-size: 2rem;
     }
@@ -345,16 +367,11 @@
 
     /* Keep close button visible at the top-right of the viewport */
     #imageModal .modal-close {
-        position: flex;
+        position: fixed;
         top: 16px;
         right: 16px;
         z-index: 10000; /* above modal content */
         background-color: rgba(255,255,255,0.3);
-    }
-    
-    .moodboard-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
     }
     
     .moodboard-controls {

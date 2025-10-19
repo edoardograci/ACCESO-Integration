@@ -62,13 +62,13 @@ async function loadCache() {
     try {
         const data = await fs.readFile(CACHE_FILE, 'utf8');
         const cacheData = JSON.parse(data);
-        console.log(`📂 Loading ${Object.keys(cacheData).length} cached mappings from file`);
+        console.log(`📂 Loaded ${Object.keys(cacheData).length} cached mappings from file`);
         for (const [pageId, imageUrl] of Object.entries(cacheData)) {
             pageImageCache.set(pageId, imageUrl);
         }
     } catch (error) {
         if (error.code !== 'ENOENT') {
-            console.warn('⚠️  Error loading cache file:', error.message);
+            console.warn('⚠️ Error loading cache file:', error.message);
         }
     }
 }
@@ -80,7 +80,7 @@ async function saveCache() {
         await fs.writeFile(CACHE_FILE, JSON.stringify(cacheData, null, 2));
         console.log(`💾 Saved ${pageImageCache.size} mappings to cache file`);
     } catch (error) {
-        console.error('❌ Error saving cache file:', error.message);
+        console.error('✗ Error saving cache file:', error.message);
     }
 }
 
@@ -89,7 +89,7 @@ async function loadExistingFiles() {
     if (!supabase) return;
     
     try {
-        console.log('🔍 Loading existing files from Supabase...');
+        console.log('📋 Loading existing files from Supabase...');
         let allFiles = [];
         let offset = 0;
         const limit = 1000;
@@ -105,7 +105,7 @@ async function loadExistingFiles() {
                 });
             
             if (error) {
-                console.error('❌ Error loading files from Supabase:', error.message);
+                console.error('✗ Error loading files from Supabase:', error.message);
                 break;
             }
             
@@ -121,15 +121,50 @@ async function loadExistingFiles() {
             existingFiles.add(file.name);
         }
         
-        console.log(`📁 Loaded ${existingFiles.size} existing files from Supabase`);
+        console.log(`📋 Loaded ${existingFiles.size} existing files from Supabase`);
     } catch (error) {
-        console.error('❌ Error loading existing files:', error.message);
+        console.error('✗ Error loading existing files:', error.message);
+    }
+}
+
+// Validate cache entries against actual Supabase files
+async function validateCache() {
+    if (!supabase || pageImageCache.size === 0) return;
+    
+    try {
+        console.log('🔍 Validating cache entries against Supabase...');
+        let invalidCount = 0;
+        const entriesToRemove = [];
+        
+        for (const [pageId, imageUrl] of pageImageCache.entries()) {
+            // Extract filename from URL (last part after /)
+            const filename = imageUrl.split('/').pop();
+            
+            if (!existingFiles.has(filename)) {
+                console.warn(`⚠️ Cache entry orphaned - file not found in Supabase: ${filename} (pageId: ${pageId})`);
+                entriesToRemove.push(pageId);
+                invalidCount++;
+            }
+        }
+        
+        // Remove invalid entries
+        for (const pageId of entriesToRemove) {
+            pageImageCache.delete(pageId);
+        }
+        
+        if (invalidCount > 0) {
+            console.log(`🧹 Removed ${invalidCount} invalid cache entries`);
+            await saveCache();
+        }
+    } catch (error) {
+        console.error('✗ Error validating cache:', error.message);
     }
 }
 
 // Initialize caches on startup
 (async () => {
     await Promise.all([loadCache(), loadExistingFiles()]);
+    await validateCache();
     console.log('🚀 Cache initialization complete');
 })();
 
@@ -218,14 +253,47 @@ async function getOptimizedWebP(buffer) {
     }
 }
 
+// Helper: verify file exists in Supabase
+async function fileExistsInSupabase(filename) {
+    if (!supabase) return false;
+    
+    try {
+        const { data, error } = await supabase.storage
+            .from("Moodboard")
+            .list('', {
+                limit: 1,
+                search: filename
+            });
+        
+        if (error) {
+            console.error(`✗ Error checking file existence: ${error.message}`);
+            return false;
+        }
+        
+        return data && data.length > 0 && data[0].name === filename;
+    } catch (error) {
+        console.error(`✗ Exception checking file: ${error.message}`);
+        return false;
+    }
+}
+
 // Helper: ensure image exists in Supabase and return public URL
 async function ensureSupabaseWebp(srcUrl, pageId) {
     if (!supabase) return null;
     
     // First check if we've already processed this specific page
     if (pageImageCache.has(pageId)) {
-        console.log(`💾 Page cache hit for ${pageId}`);
-        return pageImageCache.get(pageId);
+        const cachedUrl = pageImageCache.get(pageId);
+        const filename = cachedUrl.split('/').pop();
+        
+        // Verify the cached file still exists
+        if (existingFiles.has(filename)) {
+            console.log(`💾 Page cache hit for ${pageId}`);
+            return cachedUrl;
+        } else {
+            console.warn(`⚠️ Cached file missing from Supabase: ${filename} - reprocessing`);
+            pageImageCache.delete(pageId);
+        }
     }
     
     const filename = generateFilename(pageId);
@@ -247,7 +315,7 @@ async function ensureSupabaseWebp(srcUrl, pageId) {
         return publicUrl;
     }
 
-    // File does not exist — download, convert and upload
+    // File does not exist – download, convert and upload
     console.log(`🔄 Processing new image: ${filename} for page ${pageId}`);
     try {
         const response = await axios.get(srcUrl, { 
@@ -274,24 +342,31 @@ async function ensureSupabaseWebp(srcUrl, pageId) {
         if (upErr) {
             // If it failed because file exists (rare race condition), that's OK
             if (upErr.message && upErr.message.includes('already exists')) {
-                console.log(`ℹ️  File created by another process: ${filename}`);
+                console.log(`ℹ️ File created by another process: ${filename}`);
             } else {
-                console.error(`❌ Upload failed for ${filename}:`, upErr.message);
+                console.error(`✗ Upload failed for ${filename}:`, upErr.message);
                 throw upErr;
             }
         } else {
             console.log(`✅ Successfully uploaded: ${filename}`);
         }
         
-        // Add to our existing files set
+        // CRITICAL FIX: Verify file actually exists before caching
+        const fileExists = await fileExistsInSupabase(filename);
+        if (!fileExists) {
+            console.error(`✗ Upload verification failed - file not found after upload: ${filename}`);
+            throw new Error('File verification failed after upload');
+        }
+        
+        // Add to our existing files set only after verification
         existingFiles.add(filename);
         
     } catch (e) {
-        console.error(`❌ Failed to process image ${filename}:`, e.message);
+        console.error(`✗ Failed to process image ${filename}:`, e.message);
         throw new Error(`Failed to process and upload image: ${e.message}`);
     }
 
-    // Get public URL and cache it
+    // Get public URL and cache it ONLY after successful verification
     const { data: pub } = supabase.storage.from("Moodboard").getPublicUrl(filename);
     const publicUrl = pub.publicUrl;
     
@@ -359,7 +434,7 @@ async function processImagesInBatches(pages, batchSize = 5) {
                     updatedAt: page.last_edited_time
                 };
             } catch (e) {
-                console.warn(`⚠️  Image processing failed for page ${page.id}:`, e.message || e);
+                console.warn(`⚠️ Image processing failed for page ${page.id}:`, e.message || e);
                 return null;
             }
         });
@@ -385,7 +460,7 @@ async function processImagesInBatches(pages, batchSize = 5) {
 // API endpoint to fetch moodboard data from Notion (Published only)
 app.get("/api/moodboard", async (req, res) => {
     try {
-        console.log("🔍 Fetching moodboard data from Notion...");
+        console.log("📋 Fetching moodboard data from Notion...");
         let allResults = [];
         let hasMore = true;
         let nextCursor = null;
@@ -393,7 +468,7 @@ app.get("/api/moodboard", async (req, res) => {
         
         while (hasMore) {
             pageCount++;
-            console.log(`📄 Fetching page ${pageCount}...`);
+            console.log(`🔄 Fetching page ${pageCount}...`);
             const queryParams = {
                 database_id: moodboardId,
                 page_size: 100,
@@ -421,7 +496,7 @@ app.get("/api/moodboard", async (req, res) => {
         return res.json(mapped);
         
     } catch (error) {
-        console.error("❌ Error fetching moodboard data:", error);
+        console.error("✗ Error fetching moodboard data:", error);
         res.status(500).json({ error: "Failed to fetch moodboard data" });
     }
 });
@@ -516,10 +591,10 @@ app.post("/api/clear-cache", async (req, res) => {
     
     try {
         await fs.unlink(CACHE_FILE);
-        console.log(`🗑️  Cleared cache file and memory (${pageCacheSize} entries)`);
+        console.log(`🗑️ Cleared cache file and memory (${pageCacheSize} entries)`);
         res.json({ message: `Cleared ${pageCacheSize} cached entries and cache file` });
     } catch (error) {
-        console.log(`🗑️  Cleared memory cache (${pageCacheSize} entries)`);
+        console.log(`🗑️ Cleared memory cache (${pageCacheSize} entries)`);
         res.json({ message: `Cleared ${pageCacheSize} cached entries from memory` });
     }
 });
@@ -529,6 +604,21 @@ app.post("/api/refresh-files", async (req, res) => {
     existingFiles.clear();
     await loadExistingFiles();
     res.json({ message: `Refreshed files cache. Found ${existingFiles.size} existing files.` });
+});
+
+// Validate and clean cache
+app.post("/api/validate-cache", async (req, res) => {
+    const sizeBefore = pageImageCache.size;
+    await validateCache();
+    const sizeAfter = pageImageCache.size;
+    const removed = sizeBefore - sizeAfter;
+    
+    res.json({ 
+        message: `Cache validation complete. Removed ${removed} orphaned entries.`,
+        entriesBefore: sizeBefore,
+        entriesAfter: sizeAfter,
+        entriesRemoved: removed
+    });
 });
 
 // Save cache manually
