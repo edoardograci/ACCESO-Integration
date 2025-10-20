@@ -506,12 +506,25 @@ app.post("/api/upload-image", upload.single("image"), async (req, res) => {
     return res.status(410).json({ error: "Client uploads disabled. Images are processed server-side." });
 });
 
+// Designer Index endpoint with optional city filter
 app.get("/data", async (req, res) => {
     try {
-        const response = await notion.databases.query({
+        const city = req.query.city; // Get city from query parameter
+        
+        const queryParams = {
             database_id: databaseId,
             sorts: [{ property: "Name", direction: "ascending" }]
-        });
+        };
+        
+        // Add city filter if provided
+        if (city) {
+            queryParams.filter = {
+                property: "City",
+                select: { equals: city }
+            };
+        }
+        
+        const response = await notion.databases.query(queryParams);
         res.json(response.results);
     } catch (error) {
         console.error(error);

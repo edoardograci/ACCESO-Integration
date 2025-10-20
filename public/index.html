@@ -22,27 +22,44 @@
         </nav>
     </header>
     
-    <div id="map"></div>
-    <div id="sidebar">
-        <div id="index">
-            <h1>INDEX</h1>
-            <p id="view-toggle">[grid]</p>
-            <p id="suggestStudioBtn">[Suggest a Studio]</p>
+    <div class="main-container">
+        <div id="map"></div>
+        
+        <!-- City Toggle Button -->
+        <div id="cityToggleContainer" class="city-toggle-container">
+            <select id="cityToggle" class="city-select">
+                <option value="Milan">Milan</option>
+                <option value="Seoul">Seoul</option>
+            </select>
         </div>
-        <div class="toolbar">
-            <input type="text" placeholder="Search">
-            <button class="filter">&#9660;</button>
-            <button class="reset">&#x21bb;</button>
+
+        <!-- Map Loading Spinner -->
+        <div id="mapLoadingSpinner" class="map-loading-spinner hidden">
+            <div class="spinner"></div>
         </div>
-        <div id="list-view">
-            <ul id="places-list">
-            </ul>
-        </div>
-        <div id="grid-view" class="hidden">
-            <div id="grid-container">
+        
+        <div id="sidebar">
+            <div id="index">
+                <h1>INDEX</h1>
+                <p id="view-toggle">[grid]</p>
+                <p id="suggestStudioBtn">[Suggest a Studio]</p>
+            </div>
+            <div class="toolbar">
+                <input type="text" placeholder="Search">
+                <button class="filter">&#9660;</button>
+                <button class="reset">&#x21bb;</button>
+            </div>
+            <div id="list-view">
+                <ul id="places-list">
+                </ul>
+            </div>
+            <div id="grid-view" class="hidden">
+                <div id="grid-container">
+                </div>
             </div>
         </div>
     </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="script.js"></script>
 
