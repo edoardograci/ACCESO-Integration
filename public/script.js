@@ -10,12 +10,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Request guard to avoid race conditions
     let latestFetchId = 0;
 
-    // City configurations - tightened realistic bounds
+    // City configurations
     const cityConfigs = {
         Milan: {
             center: [45.4642, 9.19],
             zoom: 13,
-            // tighter bounds focused on central Milan
             bounds: {
                 southWest: [45.44, 9.16],
                 northEast: [45.485, 9.22]
@@ -23,11 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         Seoul: {
             center: [37.5665, 126.9784],
-            zoom: 13,
-            // much tighter bounds focused on central Seoul
+            zoom: 10,
             bounds: {
-                southWest: [37.52, 126.95],
-                northEast: [37.60, 127.00]
+                southWest: [37.4, 126.7],
+                northEast: [37.73, 127.25]
             }
         }
     };
@@ -49,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Conditionally enable scroll wheel zoom (enabled on desktop, disabled on touch devices)
     if (!('ontouchstart' in window)) {
-        // enable using API so Leaflet registers properly
         if (map.scrollWheelZoom) map.scrollWheelZoom.enable();
         else map.options.scrollWheelZoom = true;
     } else {
@@ -75,15 +72,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const southWest = L.latLng(config.bounds.southWest[0], config.bounds.southWest[1]);
         const northEast = L.latLng(config.bounds.northEast[0], config.bounds.northEast[1]);
         const bounds = L.latLngBounds(southWest, northEast);
-
-        // Apply realistic bounds with controlled zoom and panning
-        const paddedBounds = bounds.pad(0.12);
-        map.fitBounds(paddedBounds);
-        map.setMaxBounds(paddedBounds);
-        map.options.minZoom = map.getZoom(); // prevent zooming out beyond current fit
+    
+        // Set zoom based on device
+        const isMobile = 'ontouchstart' in window || window.innerWidth <= 768;
+        const zoomLevel = isMobile ? Math.max(config.zoom - 1, 10) : config.zoom;
+    
+        // Set view and fit bounds
+        map.setView(config.center, zoomLevel);
+        map.fitBounds(bounds.pad(0.12));
+        map.setMaxBounds(bounds.pad(0.12));
         map.options.maxBoundsViscosity = 1.0; // enforce boundaries smoothly
-
-        // Remove any previous custom drag handlers if they exist
+    
+        // Ensure map is rendered correctly
+        setTimeout(() => map.invalidateSize(), 100);
+    
+        // Remove any previous custom drag handlers
         map.off('drag');
         map.off('dragend');
     }
@@ -91,6 +94,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize bounds for Milan
     updateMapBounds();
 
+    // Handle resize for responsive map on mobile
+    window.addEventListener('resize', () => {
+        setTimeout(() => map.invalidateSize(), 100);
+    });
 
     // Instagram SVG icon
     const instagramSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 106 106" fill="none">
@@ -99,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <circle cx="79" cy="25" r="6.5" fill="white" stroke="white"/>
 </svg>`;
 
-    // Function that creates a divIcon from the initial
+    // Function to create divIcon from the initial
     function getIconForPlace(name) {
         if (!name || typeof name !== 'string') {
             name = 'DEFAULT';
@@ -160,10 +167,10 @@ document.addEventListener('DOMContentLoaded', function() {
             emailLinksHTML = emails.join('<br>');
         }
 
-        const imageUrl = designer.Cover || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjM0EzQTNBIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0Ij5ObyBJbWFnZTwvdGV4dD4KICAKPC9zdmc+Cg==';
+        const imageUrl = designer.Cover || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjM0EzQTNBIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0Ij5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+Cg==';
 
         card.innerHTML = `
-            <img src="${imageUrl}" alt="${designer.Name}" class="card-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjM0EzQTNBIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0Ij5ObyBJbWFnZTwvdGV4dD4KICAKPC9zdmc+Cg=='">
+            <img src="${imageUrl}" alt="${designer.Name}" class="card-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjM0EzQTNBIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE0Ij5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+Cg=='">
             <div class="card-content">
                 <div class="card-city">${designer.City || ''}</div>
                 <div class="card-name">${designer.Name}</div>
@@ -278,44 +285,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const cityToggle = document.getElementById('cityToggle');
     const mapLoadingSpinner = document.getElementById('mapLoadingSpinner');
 
-    // Keep one instance and fix logic inside as requested
     if (cityToggle) {
         cityToggle.addEventListener('change', async function() {
             const newCity = cityToggle.value;
             if (newCity === currentCity) return;
-
+    
             currentCity = newCity;
-
+    
             // Show loading indicators
             if (mapLoadingSpinner) mapLoadingSpinner.classList.remove('hidden');
-
+    
             if (currentView === 'grid') {
                 createSkeletonCards();
             }
-
+    
             // Update map view and bounds
             const config = cityConfigs[currentCity];
             if (config) {
-                // setView first, then update bounds
                 map.setView(config.center, config.zoom);
                 updateMapBounds();
-
-                // invalidate size after a short delay to ensure map redraw on layout change
-                setTimeout(() => {
-                    try { map.invalidateSize(); } catch (e) { /* ignore */ }
-                }, 250);
             }
-
+    
             // Increment fetch id and capture locally to avoid race conditions
             const fetchId = ++latestFetchId;
-
-            // Fetch new data
+    
+            // Fetch new data (spinner will be hidden in fetchData)
             await fetchData(fetchId);
-
-            // Hide loading spinner only if this is the latest fetch cycle
-            if (mapLoadingSpinner && fetchId === latestFetchId) {
-                mapLoadingSpinner.classList.add('hidden');
-            }
         });
     }
 
@@ -457,44 +452,43 @@ document.addEventListener('DOMContentLoaded', function() {
             const cityParam = encodeURIComponent(currentCity);
             // Fetch data for the current city
             const res = await fetch(`/data?city=${cityParam}`);
-
+    
             // If another fetch started meanwhile, ignore this response
             if (localFetchId !== latestFetchId) {
-                // discard result
                 return;
             }
-
+    
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
-
+    
             const items = await res.json();
-
+    
             // verify still latest after async json parse
             if (localFetchId !== latestFetchId) return;
-
+    
             console.log("Raw Notion data:", items);
-
+    
             // Clear existing markers
             markers.forEach(marker => {
                 try { map.removeLayer(marker); } catch (e) { /* ignore */ }
             });
             markers = [];
-
+    
             // Check if items is an array
             if (!Array.isArray(items)) {
                 console.error("Expected an array but got:", typeof items, items);
                 return;
             }
-
+    
             // Extract properties from Notion page objects
             const processedItems = items.map(page => {
                 const props = page.properties || {};
-
+    
                 // Helper function to extract values from Notion properties
                 const getValue = (property) => {
                     if (!property) return null;
-
+    
                     switch (property.type) {
                         case 'title':
                             return property.title?.[0]?.plain_text || '';
@@ -518,7 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             return property[property.type] || '';
                     }
                 };
-
+    
                 return {
                     Status: getValue(props.Status),
                     Name: getValue(props.Name),
@@ -535,66 +529,81 @@ document.addEventListener('DOMContentLoaded', function() {
                     Longitude: getValue(props.Longitude)
                 };
             });
-
+    
             console.log("Processed items:", processedItems);
-
+    
             // Filter only published items and those matching current city
             const publishedItems = processedItems.filter(item =>
                 item &&
                 item.Status === "Published" &&
                 item.City === currentCity
             );
-
+    
             // Sort alphabetically by name
             publishedItems.sort((a, b) => a.Name.localeCompare(b.Name));
-
+    
             // Store processed data globally
             designersData = publishedItems;
-
+    
             // Render current view
             if (currentView === 'list') {
                 renderListView(publishedItems);
             } else {
                 renderGridView(publishedItems);
             }
-
+    
             // Process markers - only for items with coordinates
             const itemsWithCoordinates = publishedItems.filter(item =>
                 item.Latitude && item.Longitude
             );
-
+    
             itemsWithCoordinates.forEach(function(item) {
                 const lat = parseFloat(item.Latitude);
                 const lon = parseFloat(item.Longitude);
                 if (isNaN(lat) || isNaN(lon)) return;
-
+    
                 // Create marker with custom icon
                 const marker = L.marker([lat, lon], {
                     icon: getIconForPlace(item.Name)
                 }).addTo(map);
-
+    
                 // Create popup content with address if available
                 let popupContent = `<strong>${item.Name}</strong>`;
                 if (item.Address) {
                     popupContent += `<br>${item.Address}`;
                 }
-
+    
                 marker.bindPopup(popupContent);
-
+    
                 // Add click event to center map
                 marker.on('click', function() {
                     map.setView(marker.getLatLng(), 16);
                 });
-
+    
                 // Store marker reference
                 markers.push(marker);
             });
-
+    
             // Attach event listeners
             attachViewEventListeners();
-
+    
+            // Ensure map is properly rendered and hide spinner after rendering
+            setTimeout(() => {
+                map.invalidateSize();
+                // Wait for map to finish rendering
+                map.once('moveend', () => {
+                    if (mapLoadingSpinner && localFetchId === latestFetchId) {
+                        setTimeout(() => mapLoadingSpinner.classList.add('hidden'), 500);
+                    }
+                });
+            }, 100);
+    
         } catch (error) {
             console.error("Error fetching data:", error);
+            // Hide spinner on error, but only for latest fetch
+            if (mapLoadingSpinner && localFetchId === latestFetchId) {
+                setTimeout(() => mapLoadingSpinner.classList.add('hidden'), 500);
+            }
         }
     }
 
@@ -603,7 +612,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Refresh every 30 seconds with race guard
     setInterval(() => {
-        // start a new fetch that will be guarded by latestFetchId
         fetchData(++latestFetchId);
     }, 30000);
 
